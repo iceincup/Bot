@@ -16,7 +16,7 @@ administrators = ["181942382583873538", "188004756059455492", "18170415073460224
 
 king = ["181704150734602240", ]
 
-
+# version 7.5
 @client.event
 @asyncio.coroutine
 def on_ready():
