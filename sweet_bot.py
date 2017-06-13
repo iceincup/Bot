@@ -1,9 +1,10 @@
 import discord
 import asyncio
 import json
+import time 
 
 
-
+cooldown = dict()
 client = discord.Client()
 members_dic = {}
 
@@ -16,7 +17,7 @@ administrators = ["181942382583873538", "188004756059455492", "18170415073460224
 
 king = ["181704150734602240", ]
 
-# version 7.5
+# version 7.7
 @client.event
 @asyncio.coroutine
 def on_ready():
@@ -29,16 +30,38 @@ def on_ready():
 
 @client.event
 async def on_member_update(before, after):
+    #Welcomes King
     if before.id in king and before.is_afk == True and after.is_afk == False:
         await client.send_message(before.server, 'Long Live King Usifan!')
 
+@client.event
+async def on_member_join(member):
+    #Welcome message
+    welcome_message = "Hello {0}!".format(member.mention)
+    welcome_message += ' Welcome to Al-Khezam. Be our guest and may your stay be pleasant.'
+    welcome_message += ' Type in !contactme to get a private message from me.'
+    await client.send_message(member.server, welcome_message)
 
-
+ 
 @client.event
 @asyncio.coroutine
 async def on_message(message):
-    if message.content.startswith('!ping'):
-        await client.send_message(message.channel, 'Pong!')
+    if message.content.startswith('!'):
+        if message.author in cooldown and time.time() - cooldown[message.author] < 10:
+            await client.send_message(message.channel, "please wait {0} seconds before sending another command!".format(10 - (time.time() - cooldown[message.author])))
+            return
+        else:
+            cooldown[message.author] = time.time()
+    
+
+
+    if message.content.startswith('!contactme'):
+        # Sends a private message
+        newly_msg = "Welcome " + message.author.display_name
+        newly_msg += " I am a bot from Al-Khezam. Thank you for calling on me."
+        newly_msg += " You can type !help to get a list of what I can help you with."
+        await client.send_message(message.author, newly_msg)
+       
 
     if message.content.startswith('!scoreboard'):
         # Prints the top 10 scores
@@ -54,10 +77,11 @@ async def on_message(message):
         await client.send_message(message.author, "Here is the full scoreboard:")
         for points, v in scoreboard:
             await client.send_message(message.author, str(points) + " has " + str(v) + " points!")
+           
         
-
-
+        
     if message.content.startswith('!help'):
+        #Print a list of commands
         help_msg = "Type '!register' to register yourself\nType '!myscore' to view your score "
         help_msg += "\nType '!scoreboard' to view the Top 10 scores!"
         help_msg += "\nType '!info' for information about the Crown Favour Points!"
